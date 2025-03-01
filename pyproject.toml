@@ -3,7 +3,9 @@ name = "bpm-tagger"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "librosa>=0.10.2.post1",
+    "mediafile>=0.13.0",
+    "tqdm>=4.67.1",
 ]
