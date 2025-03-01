@@ -6,7 +6,6 @@ del logging
 import os
 from pathlib import Path
 
-import librosa
 from mediafile import (
     MediaField,
     MediaFile,
@@ -14,10 +13,14 @@ from mediafile import (
     MP4StorageStyle,
     StorageStyle,
 )
+from tempocnn.classifier import TempoClassifier
+from tempocnn.feature import read_features
 from tqdm import tqdm
 
 MUSIC_DIR = R"D:\Soundtracks\Downloaded Playlist"
 MUSIC_EXT = (".m4a", ".opus", ".mp3", ".flac", ".ogg", ".wav", ".aiff")
+
+TEMPO_CLASSIFIER = TempoClassifier("fcn")
 
 
 def setup_logging():
@@ -60,14 +63,9 @@ del MediaFile
 
 
 def estimate_tempo(path) -> float:
-    y, sr = librosa.load(path)
-    onset_env = librosa.onset.onset_strength(y=y, sr=sr)
-    tempo = librosa.feature.tempo(onset_envelope=onset_env, sr=sr)
+    features = read_features(path)
 
-    if len(tempo) != 1:
-        raise RuntimeError(f"Weird return value from tempo estimation: {tempo!r}")
-
-    return float(tempo[0])
+    return TEMPO_CLASSIFIER.estimate_tempo(features, interpolate=False)
 
 
 def iter_music_paths(folder):
