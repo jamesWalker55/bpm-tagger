@@ -49,15 +49,32 @@ def estimate_tempo(path) -> float:
     return float(tempo[0])
 
 
+def iter_music_paths(folder):
+    for entry in os.scandir(folder):
+        path = Path(entry.path)
+
+        # skip if not music file
+        if path.suffix.lower() not in MUSIC_EXT:
+            continue
+
+        try:
+            mf = MediaFile(path)
+        except Exception as e:
+            log.error("failed to read bpm info for: %s", path)
+            continue
+
+        # check if the file is already tagged with bpm info
+        if mf.bpm is not None:
+            continue
+
+        yield path
+
+
 def main():
     setup_logging()
 
     # filter music files in the folder
-    music_paths = [
-        entry.path
-        for entry in os.scandir(MUSIC_DIR)
-        if Path(entry.path).suffix.lower() in MUSIC_EXT
-    ]
+    music_paths = list(iter_music_paths(MUSIC_DIR))
 
     for path in tqdm(music_paths):
         log.info(path)
