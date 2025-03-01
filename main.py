@@ -5,8 +5,15 @@ del logging
 
 import os
 from pathlib import Path
+
 import librosa
-from mediafile import MediaFile
+from mediafile import (
+    MediaField,
+    MediaFile,
+    MP3StorageStyle,
+    MP4StorageStyle,
+    StorageStyle,
+)
 from tqdm import tqdm
 
 MUSIC_DIR = R"D:\Soundtracks\Downloaded Playlist"
@@ -38,6 +45,20 @@ def setup_logging():
     log.addHandler(h)
 
 
+class FoobarMediaFile(MediaFile):
+    # Custom field for foobar2000's BPM field.
+    # Also supports floats, unlike the MediaFile's built-in .bpm property
+    foobar_bpm = MediaField(
+        MP4StorageStyle("----:com.apple.iTunes:bpm"),
+        MP3StorageStyle("TBPM"),
+        StorageStyle("BPM"),
+        out_type=float,
+    )
+
+
+del MediaFile
+
+
 def estimate_tempo(path) -> float:
     y, sr = librosa.load(path)
     onset_env = librosa.onset.onset_strength(y=y, sr=sr)
@@ -58,13 +79,14 @@ def iter_music_paths(folder):
             continue
 
         try:
-            mf = MediaFile(path)
+            mf = FoobarMediaFile(path)
         except Exception as e:
             log.error("failed to read bpm info for: %s", path)
+            log.exception(e)
             continue
 
         # check if the file is already tagged with bpm info
-        if mf.bpm is not None:
+        if mf.foobar_bpm is not None:
             continue
 
         yield path
@@ -89,9 +111,8 @@ def main():
         log.info("tempo is %f", bpm)
 
         try:
-            mf = MediaFile(path)
-            # bpm field only supports integers
-            mf.bpm = round(bpm)
+            mf = FoobarMediaFile(path)
+            mf.foobar_bpm = bpm
             mf.save()
         except Exception as e:
             log.error("failed to write tempo %s to file: %s", bpm, path)
