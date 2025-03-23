@@ -90,11 +90,30 @@ def iter_music_paths(folder):
         yield path
 
 
+def parse_args():
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+
+    parser.add_argument(
+        "--path",
+        "-p",
+        help="path to the folder containing music files",
+        default=MUSIC_DIR,
+    )
+
+    return parser.parse_args()
+
+
 def main():
     setup_logging()
 
+    args = parse_args()
+
     # filter music files in the folder
-    music_paths = list(iter_music_paths(MUSIC_DIR))
+    music_paths = list(iter_music_paths(args.path))
 
     for path in tqdm(music_paths):
         log.info(path)
