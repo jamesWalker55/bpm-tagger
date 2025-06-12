@@ -52,10 +52,11 @@ class FoobarMediaFile(MediaFile):
     # Custom field for foobar2000's BPM field.
     # Also supports floats, unlike the MediaFile's built-in .bpm property
     foobar_bpm = MediaField(
-        MP4StorageStyle("----:com.apple.iTunes:bpm"),
+        MP4StorageStyle("----:com.apple.iTunes:BPM"),  # foobar uses uppercase BPM
+        # MP4StorageStyle("----:com.apple.iTunes:bpm"), # lowercase is different from uppercase
         MP3StorageStyle("TBPM"),
         StorageStyle("BPM"),
-        out_type=float,
+        out_type=str,  # read/write as str intentionally
     )
 
 
@@ -129,7 +130,7 @@ def main():
 
         try:
             mf = FoobarMediaFile(path)
-            mf.foobar_bpm = bpm
+            mf.foobar_bpm = "%d" % round(bpm)
             mf.save()
         except Exception as e:
             log.error("failed to write tempo %s to file: %s", bpm, path)
