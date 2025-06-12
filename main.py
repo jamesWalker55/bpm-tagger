@@ -20,7 +20,7 @@ from tqdm import tqdm
 MUSIC_DIR = R"D:\Soundtracks\Downloaded Playlist"
 MUSIC_EXT = (".m4a", ".opus", ".mp3", ".flac", ".ogg", ".wav", ".aiff")
 
-TEMPO_CLASSIFIER = TempoClassifier("fcn")
+TEMPO_CLASSIFIER: TempoClassifier | None = None
 
 
 def setup_logging():
@@ -64,7 +64,12 @@ del MediaFile
 
 
 def estimate_tempo(path) -> float:
+    global TEMPO_CLASSIFIER
+
     features = read_features(path)
+
+    if TEMPO_CLASSIFIER is None:
+        TEMPO_CLASSIFIER = TempoClassifier("fcn")
 
     return TEMPO_CLASSIFIER.estimate_tempo(features, interpolate=False)
 
