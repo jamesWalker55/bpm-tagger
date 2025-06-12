@@ -13,14 +13,10 @@ from mediafile import (
     MP4StorageStyle,
     StorageStyle,
 )
-from tempocnn.classifier import TempoClassifier
-from tempocnn.feature import read_features
 from tqdm import tqdm
 
 MUSIC_DIR = R"D:\Soundtracks\Downloaded Playlist"
 MUSIC_EXT = (".m4a", ".opus", ".mp3", ".flac", ".ogg", ".wav", ".aiff")
-
-TEMPO_CLASSIFIER: TempoClassifier | None = None
 
 
 def setup_logging():
@@ -63,7 +59,13 @@ class FoobarMediaFile(MediaFile):
 del MediaFile
 
 
+TEMPO_CLASSIFIER = None
+
+
 def estimate_tempo(path) -> float:
+    from tempocnn.classifier import TempoClassifier
+    from tempocnn.feature import read_features
+
     global TEMPO_CLASSIFIER
 
     features = read_features(path)
